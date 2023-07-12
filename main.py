@@ -1,30 +1,43 @@
 import os
 from celery import group, Celery
 from fastapi import FastAPI
-from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
+from opentelemetry import trace
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.propagate import set_global_textmap
 from opentelemetry.propagators.b3 import B3MultiFormat
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from tasks import current_datetime_async
 
-app = FastAPI()
-
-tracer = trace.get_tracer(__name__)
-trace_provider = TracerProvider(resource=Resource.create({"service.name": "carol-sql-orchestration"}))
-trace.set_tracer_provider(trace_provider)
-set_global_textmap(B3MultiFormat())
-FastAPIInstrumentor.instrument_app(app)
-# CeleryInstrumentor().instrument()
-LoggingInstrumentor().instrument(set_logging_format=True)
 
 c = Celery(
     broker=os.environ['BROKER_URL'],
     backend=os.environ['RESULT_BACKEND'],
 )
+
+app = FastAPI()
+
+def _configure_tracer(app):
+    FastAPIInstrumentor.instrument_app(app)
+    CeleryInstrumentor().instrument()
+    propagator = B3MultiFormat()
+    set_global_textmap(propagator)
+
+def _init_tracer(): 
+    resource = Resource(attributes={
+    "service.name": os.environ.get("OTEL_SERVICE_NAME", "carol-sql-orchestration"),
+      })
+    provider = TracerProvider(resource=resource)
+    processor = BatchSpanProcessor(ConsoleSpanExporter())
+    provider.add_span_processor(processor)
+    trace.set_tracer_provider(provider)
+
+
+_init_tracer()
+_configure_tracer(app)
+
 
 
 @app.get("/")
