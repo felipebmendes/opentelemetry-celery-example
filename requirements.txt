@@ -11,4 +11,4 @@ opentelemetry-distro[otlp]
 opentelemetry-instrumentation-celery
 opentelemetry-instrumentation-fastapi
 opentelemetry-propagator-b3
-opentelemetry-instrumentation-logging
+

@@ -11,7 +11,7 @@ services:
       - RESULT_BACKEND=redis://redis:6379/0
     ports:
       - "8000:8000"
-    command: opentelemetry-instrument uvicorn main:app --log-level info --proxy-headers --host 0.0.0.0 --port 8000
+    command: uvicorn main:app --log-level info --proxy-headers --host 0.0.0.0 --port 8000
     # command: uvicorn main:app --host 0.0.0.0 --port 8000
 
   worker:
