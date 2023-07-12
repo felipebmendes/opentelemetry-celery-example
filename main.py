@@ -27,7 +27,7 @@ def _configure_tracer(app):
 
 def _init_tracer(): 
     resource = Resource(attributes={
-    "service.name": os.environ.get("OTEL_SERVICE_NAME", "carol-sql-orchestration"),
+    "service.name": os.environ.get("OTEL_SERVICE_NAME", "api"),
       })
     provider = TracerProvider(resource=resource)
     processor = BatchSpanProcessor(ConsoleSpanExporter())

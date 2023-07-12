@@ -22,7 +22,7 @@ app = Celery(
 def init_worker(**kwargs):
 
     resource = Resource(attributes={
-    "service.name": os.environ.get("OTEL_SERVICE_NAME", "carol-sql-orchestration-worker"),
+    "service.name": os.environ.get("OTEL_SERVICE_NAME", "worker"),
       })
     provider = TracerProvider(resource=resource)
     trace.set_tracer_provider(TracerProvider(resource=resource))
